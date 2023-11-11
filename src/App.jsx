@@ -1,79 +1,29 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import axios from "axios";
-import PokeCard from "./components/PokeCard";
-import { useDebounce } from "./hooks/useDebounce";
-import AutoComplete from "./components/AutoComplete";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
+import MainPage from "./pages/MainPage";
+import DetailPage from "./pages/DetailPage";
+
+const Layout = () => {
+  return (
+    <>
+      <br />
+      <br />
+      <br />
+      <Outlet />
+    </>
+  );
+};
 
 function App() {
-  // 모든 포켓몬 데이터를 가지고 있는 State
-  const [allPokemons, setAllPokemons] = useState([]);
-
-  // 실제로 리스트로 보여주는 포켓몬 데이터를 가지고 있는 State
-  const [displayedPokemons, setDisplayedPokemons] = useState([]);
-  // 한번에 보여주는 포켓몬 수
-  const limitNum = 20;
-  const url = `https://pokeapi.co/api/v2/pokemon/?limit=1008&offset=0`;
-
-  useEffect(() => {
-    fetchPokeData();
-  }, []);
-
-  const filterDisplayedPokemonData = (allPokemonsData, displayedPokemons = []) => {
-    const limit = displayedPokemons.length + limitNum;
-    // 모든 포켓몬 데이터에서 limitNum 만큼 더 가져오기
-    const array = allPokemonsData.filter((_, index) => index + 1 <= limit);
-    return array;
-  };
-
-  const fetchPokeData = async () => {
-    try {
-      // 1008 포켓몬 데이터 받아오기
-      const response = await axios.get(url);
-      //모든 포켓몬 데이터 기억하기
-      setAllPokemons(response.data.results);
-      // 실제로 화면에 보여줄 포켓몬 리스트 기억하는 state 20
-      setDisplayedPokemons(filterDisplayedPokemonData(response.data.results));
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
-    <article className="pt-6">
-      <header className="flex flex-col gap-2 w-full px-4 z-50">
-        <AutoComplete allPokemons={allPokemons} setDisplayedPokemons={setDisplayedPokemons} />
-      </header>
-      <section className="pt-6 flex flex-col justify-content items-center overflow-auto z-0">
-        <div className="flex flex-row flex-wrap gap-[16px] items-center justify-center px-2 max-w-4xl ">
-          {displayedPokemons.length > 0 ? (
-            displayedPokemons.map(({ url, name }) => <PokeCard key={url} url={url} name={name} />)
-          ) : (
-            <h2 className="font-medium text-lg text-slate-900 mb-1">포켓몬이 없습니다.</h2>
-          )}
-        </div>
-      </section>
-      <div className="text-center">
-        {allPokemons.length > displayedPokemons.length && displayedPokemons.length > limitNum && (
-          <button
-            onClick={() =>
-              setDisplayedPokemons(filterDisplayedPokemonData(allPokemons, displayedPokemons))
-            }
-            className="bg-slate-800 px-6 py-2 my-4 text-base rounded-lg font-bold text-white"
-          >
-            더 보기
-          </button>
-        )}
-      </div>
-    </article>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<MainPage />} />
+          <Route path="/pokemon/:id" element={<DetailPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-// useEffect 의 실행 시점:
-// 우선 App component 가 마운트가 된 후
-// 1번인, state(상태)가 초기화가 되면서 업데이트 되고,
-// 그이후에 jsx구문(2번), 그다음에 useEffect(3번) 실행
-// useEffect에서 어떤 동작이 일어난 후에 그 위의 state 값을 변경하게 되면,
-// 컴포넌트가 다시 렌더링이된다.
 
 export default App;
