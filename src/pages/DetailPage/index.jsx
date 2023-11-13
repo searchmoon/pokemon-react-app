@@ -9,6 +9,7 @@ import { GreaterThan } from "../../assets/GreaterThan";
 import { ArrowLeft } from "../../assets/ArrowLeft";
 import Type from "../../components/Type";
 import BaseStat from "../../components/BaseStat";
+import DamageRelations from "../../components/DamageRelations";
 
 const DetailPage = () => {
   const [pokemon, setPokemon] = useState();
@@ -208,6 +209,7 @@ const DetailPage = () => {
                 </tbody>
               </table>
             </div>
+            <DamageRelations damages={pokemon.DamageRelations} />
             <h2 className={`text-base font-semibold ${text}`}>설명</h2>
             <p className="text-md leading-4 font-sans text-zinc-200 max-w-[30rem] text-center">
               {pokemon.description}
