@@ -10,13 +10,17 @@ import {
 } from "firebase/auth";
 import app from "../firebase";
 
+const initialUserData = localStorage.getItem("userData")
+  ? JSON.parse(localStorage.getItem("userData"))
+  : {};
+
 const NavBar = () => {
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider(app, auth);
 
   const [show, setShow] = useState(false);
 
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState(initialUserData);
 
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -38,6 +42,7 @@ const NavBar = () => {
     signInWithPopup(auth, provider)
       .then((result) => {
         setUserData(result.user);
+        localStorage.setItem("userData", JSON.stringify(result.user));
       })
       .catch((error) => {
         console.error(error);
