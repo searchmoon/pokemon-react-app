@@ -10,20 +10,24 @@ import { ArrowLeft } from "../../assets/ArrowLeft";
 import Type from "../../components/Type";
 import BaseStat from "../../components/BaseStat";
 import DamageRelations from "../../components/DamageRelations";
+import DamageModal from "../../components/DamageModal";
 
 const DetailPage = () => {
   const [pokemon, setPokemon] = useState();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const params = useParams();
   const pokemonId = params.id;
   const baseUrl = "https://pokeapi.co/api/v2/pokemon/";
 
   useEffect(() => {
-    fetchPokemonData();
-  }, []);
+    setIsLoading(true);
+    fetchPokemonData(pokemonId);
+  }, [pokemonId]);
 
-  const fetchPokemonData = async () => {
-    const url = `${baseUrl}${pokemonId}`;
+  const fetchPokemonData = async (id) => {
+    const url = `${baseUrl}${id}`;
     try {
       const { data: pokemonData } = await axios.get(url);
       //반환하는 response의 data를 (response.data) 디스트럭쳐링.
@@ -32,7 +36,8 @@ const DetailPage = () => {
       console.log(pokemonData);
 
       if (pokemonData) {
-        const { name, id, types, weight, height, stats, abilities } = pokemonData;
+        const { name, id, types, weight, height, stats, abilities, sprites } = pokemonData;
+        console.log(sprites);
         const nextAndPreviousPokemon = await getNextAndPreviousPokemon(id);
 
         const DamageRelations = await Promise.all(
@@ -54,7 +59,11 @@ const DetailPage = () => {
           stats: formatPokemonStats(stats),
           DamageRelations,
           types: types.map((type) => type.type.name),
+          sprites: formatPokemonSprites(sprites),
+          description: await getPokemonDescription(id),
         };
+        console.log(formattedPokemonData);
+
         setPokemon(formattedPokemonData);
         setIsLoading(false);
       }
@@ -62,6 +71,34 @@ const DetailPage = () => {
       setIsLoading(false);
       console.log(error);
     }
+  };
+
+  const filterAndFormatDescription = (flavorText) => {
+    const koreanDescriptions = flavorText
+      ?.filter((text) => text.language.name === "ko")
+      .map((text) => text.flavor_text.replace(/\r|\n|\f/g, " "));
+    return koreanDescriptions;
+  };
+
+  const getPokemonDescription = async (id) => {
+    const url = `https://pokeapi.co/api/v2/pokemon-species/${id}/`;
+
+    const { data: pokemonSpecies } = await axios.get(url);
+    console.log(pokemonSpecies);
+    const descriptions = filterAndFormatDescription(pokemonSpecies.flavor_text_entries);
+    return descriptions[Math.floor(Math.random() * descriptions.length)];
+  };
+
+  const formatPokemonSprites = (sprites) => {
+    const newSprites = { ...sprites };
+
+    Object.keys(newSprites).forEach((key) => {
+      if (typeof newSprites[key] !== "string") {
+        delete newSprites[key];
+      }
+    });
+    console.log(newSprites);
+    return Object.values(newSprites);
   };
 
   const formatPokemonAbilities = (abilities) => {
@@ -158,6 +195,7 @@ const DetailPage = () => {
                 loading="lazy"
                 alt={pokemon.name}
                 className={`object-contain h-full cursor-pointer`}
+                onClick={() => setIsModalOpen(true)}
               />
             </div>
           </section>
@@ -188,7 +226,6 @@ const DetailPage = () => {
                 <h4 className="text-[0.5rem] text-zinc-100">Weight</h4>
                 {pokemon.abilities.map((ability) => (
                   <div key={ability} className="text-[0.5rem] text-zinc-100 capitalize">
-                    {" "}
                     {ability}
                   </div>
                 ))}
@@ -209,15 +246,21 @@ const DetailPage = () => {
                 </tbody>
               </table>
             </div>
-            <DamageRelations damages={pokemon.DamageRelations} />
             <h2 className={`text-base font-semibold ${text}`}>설명</h2>
             <p className="text-md leading-4 font-sans text-zinc-200 max-w-[30rem] text-center">
               {pokemon.description}
             </p>
 
-            <div className="flex my-8 flex-wrap justify-center"></div>
+            <div className="flex my-8 flex-wrap justify-center">
+              {pokemon.sprites.map((url, index) => (
+                <img key={index} src={url} alt="sprite" />
+              ))}
+            </div>
           </section>
         </div>
+        {isModalOpen && (
+          <DamageModal setIsModalOpen={setIsModalOpen} damages={pokemon.DamageRelations} />
+        )}
       </article>
     );
   }
