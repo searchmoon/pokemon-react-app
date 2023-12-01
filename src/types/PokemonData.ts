@@ -5,7 +5,7 @@ export interface PokemonData {
     results: PokemonNameAndUrl[];
 }
 
-export interface PokemonNameAndUrl extends PokemonData {
+export interface PokemonNameAndUrl {
     name: string;
     url: string;
 }
