@@ -29,7 +29,6 @@ const PokeCard = ({ name, url }: PokemonNameAndUrl) => {
   };
 
   const formatPokemonData = (params: PokemonDetail) => {
-    console.log(JSON.stringify(params));
     console.log(params);
     const { id, types, name } = params;
     const PokeData: PokeData = {
@@ -55,7 +54,9 @@ const PokeCard = ({ name, url }: PokemonNameAndUrl) => {
           className={`box-border rounded-lg ${border} w-[8.5rem] h-[8.5rem] z-0 bg-slate-800 justify-between items-center`}
         >
           <>
-            <div className={`${text} h-[1.5rem] text-xs w-full pt-1 px-2  text-right rounded-t-lg`}>
+            <div
+              className={`${text} h-[1.5rem] text-xs w-full pt-1 px-2  text-right rounded-t-lg`}
+            >
               #{pokemon.id.toString().padStart(3, "00")}
             </div>
             <div className={`w-full f-6 flex items-center justify-center`}>

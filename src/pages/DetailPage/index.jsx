@@ -36,14 +36,15 @@ const DetailPage = () => {
       console.log(pokemonData);
 
       if (pokemonData) {
-        const { name, id, types, weight, height, stats, abilities, sprites } = pokemonData;
+        const { name, id, types, weight, height, stats, abilities, sprites } =
+          pokemonData;
         console.log(sprites);
         const nextAndPreviousPokemon = await getNextAndPreviousPokemon(id);
 
         const DamageRelations = await Promise.all(
           types.map(async (i) => {
             const type = await axios.get(i.type.url);
-
+            console.log("@@", JSON.stringify(type.data));
             return type.data.damage_relations;
           })
         );
@@ -85,7 +86,9 @@ const DetailPage = () => {
 
     const { data: pokemonSpecies } = await axios.get(url);
     console.log(pokemonSpecies);
-    const descriptions = filterAndFormatDescription(pokemonSpecies.flavor_text_entries);
+    const descriptions = filterAndFormatDescription(
+      pokemonSpecies.flavor_text_entries
+    );
     return descriptions[Math.floor(Math.random() * descriptions.length)];
   };
 
@@ -107,7 +110,14 @@ const DetailPage = () => {
       .map((obj) => obj.ability.name.replaceAll("-", " "));
   };
 
-  const formatPokemonStats = ([statHP, statATK, statDEP, statSATK, statSDEP, statSPD]) => {
+  const formatPokemonStats = ([
+    statHP,
+    statATK,
+    statDEP,
+    statSATK,
+    statSDEP,
+    statSPD,
+  ]) => {
     return [
       { name: "Hit Points", baseStat: statHP.base_stat },
       { name: "Attack", baseStat: statATK.base_stat },
@@ -123,8 +133,10 @@ const DetailPage = () => {
     const { data: pokemonData } = await axios.get(urlPokemon);
     console.log(pokemonData);
 
-    const nextResponse = pokemonData.next && (await axios.get(pokemonData.next));
-    const previousResponse = pokemonData.previous && (await axios.get(pokemonData.previous));
+    const nextResponse =
+      pokemonData.next && (await axios.get(pokemonData.next));
+    const previousResponse =
+      pokemonData.previous && (await axios.get(pokemonData.previous));
 
     console.log(previousResponse);
 
@@ -136,7 +148,9 @@ const DetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className={`absolute h-auto w-auto top-1/3 -translate-x-1/2 left-1/2 z-50`}>
+      <div
+        className={`absolute h-auto w-auto top-1/3 -translate-x-1/2 left-1/2 z-50`}
+      >
         <Loading className="w-12 h-12 z-50 animate-spin text-slate-900" />
       </div>
     );
@@ -180,7 +194,9 @@ const DetailPage = () => {
                 <Link to="/">
                   <ArrowLeft className="w-6 h-8 text-zinc-200" />
                 </Link>
-                <h1 className="text-zinc-200 font-bold text-xl capitalize">{pokemon.name}</h1>
+                <h1 className="text-zinc-200 font-bold text-xl capitalize">
+                  {pokemon.name}
+                </h1>
               </div>
               <div className="text-zinc-200 font-bold text-md">
                 #{pokemon.id.toString().padStart(3, "00")}
@@ -225,7 +241,10 @@ const DetailPage = () => {
               <div className="w-full">
                 <h4 className="text-[0.5rem] text-zinc-100">Weight</h4>
                 {pokemon.abilities.map((ability) => (
-                  <div key={ability} className="text-[0.5rem] text-zinc-100 capitalize">
+                  <div
+                    key={ability}
+                    className="text-[0.5rem] text-zinc-100 capitalize"
+                  >
                     {ability}
                   </div>
                 ))}
@@ -259,7 +278,10 @@ const DetailPage = () => {
           </section>
         </div>
         {isModalOpen && (
-          <DamageModal setIsModalOpen={setIsModalOpen} damages={pokemon.DamageRelations} />
+          <DamageModal
+            setIsModalOpen={setIsModalOpen}
+            damages={pokemon.DamageRelations}
+          />
         )}
       </article>
     );
