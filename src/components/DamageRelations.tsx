@@ -1,8 +1,18 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Type from "./Type";
+import { DamageRelations as DamageRelationsProps } from "../types/DamageRelationOfPokemonTypes";
+import { Damage, DamageFromAndTo, SeparateDamages } from "../types/SeparateDamageRelations";
 
-const DamageRelations = ({ damages }) => {
-  const [damagePokemonForm, setDamagePokemonForm] = useState();
+interface DamageModalProps {
+  damages: DamageRelationsProps[];
+}
+interface Info {
+  name: string;
+  url: string;
+}
+
+const DamageRelations = ({ damages }: DamageModalProps) => {
+  const [damagePokemonForm, setDamagePokemonForm] = useState<SeparateDamages>();
 
   useEffect(() => {
     const arrayDamage = damages.map((damage) => separateObjectBetweenToAndFrom(damage));
@@ -17,14 +27,14 @@ const DamageRelations = ({ damages }) => {
     }
   }, [damages]);
 
-  const joinDamageRelations = (props) => {
+  const joinDamageRelations = (props: DamageFromAndTo[]): DamageFromAndTo => {
     return {
       to: joinObjects(props, "to"),
       from: joinObjects(props, "from"),
     };
   };
 
-  const reduceDuplicateValues = (props) => {
+  const reduceDuplicateValues = (props: SeparateDamages) => {
     const duplicateValues = {
       double_damage: "4x",
       half_damage: "1/4x",
@@ -32,7 +42,7 @@ const DamageRelations = ({ damages }) => {
     };
 
     return Object.entries(props).reduce((acc, [keyName, value]) => {
-      const key = keyName;
+      const key = keyName as keyof typeof props;
       // console.log([keyName, value]);
 
       const verifiedValue = filterForUniqueValues(value, duplicateValues[key]);
@@ -41,8 +51,8 @@ const DamageRelations = ({ damages }) => {
     }, {});
   };
 
-  const filterForUniqueValues = (valueForFiltering, damageValue) => {
-    const initialArray = [];
+  const filterForUniqueValues = (valueForFiltering: Damage[], damageValue: string) => {
+    const initialArray: Damage[] = [];
 
     return valueForFiltering.reduce((acc, currentValue) => {
       const { url, name } = currentValue;
@@ -55,25 +65,29 @@ const DamageRelations = ({ damages }) => {
     }, initialArray);
   };
 
-  const joinObjects = (props, string) => {
-    const key = string;
+  const joinObjects = (props: DamageFromAndTo[], string: string) => {
+    const key = string as keyof (typeof props)[0];
+    // 그냥 자바스크립트의 key 를 가져올 수 없으니깐 타입으로 먼저 만들어준 후에 key를 가져오는 방식이다
     const firstArrayValue = props[0][key];
     const secondArrayValue = props[1][key];
 
-    const result = Object.entries(secondArrayValue).reduce((acc, [keyName, value]) => {
-      // console.log(acc, [keyName, value]);
-      const key = keyName;
-      const result = firstArrayValue[key]?.concat(value);
+    const result = Object.entries(secondArrayValue).reduce(
+      (acc, [keyName, value]: [string, Damage]) => {
+        // console.log(acc, [keyName, value]);
+        const key = keyName as keyof typeof firstArrayValue;
+        const result = firstArrayValue[key]?.concat(value);
 
-      return (acc = { [keyName]: result, ...acc });
-    }, {});
+        return (acc = { [keyName]: result, ...acc });
+      },
+      {}
+    );
 
     return result;
   };
 
-  const postDamageValue = (props) => {
+  const postDamageValue = (props: SeparateDamages): SeparateDamages => {
     const result = Object.entries(props).reduce((acc, [keyName, value]) => {
-      const key = keyName;
+      const key = keyName as keyof typeof props;
 
       const valuesOfKeyName = {
         double_damage: "2x",
@@ -82,7 +96,7 @@ const DamageRelations = ({ damages }) => {
       };
 
       return (acc = {
-        [keyName]: value.map((i) => ({
+        [keyName]: value.map((i: Info[]) => ({
           damageValue: valuesOfKeyName[key],
           ...i,
         })),
@@ -94,7 +108,7 @@ const DamageRelations = ({ damages }) => {
     return result;
   };
 
-  const separateObjectBetweenToAndFrom = (damage) => {
+  const separateObjectBetweenToAndFrom = (damage: DamageRelationsProps): DamageFromAndTo => {
     const from = filterDamageRelations("_from", damage);
     console.log(from);
     const to = filterDamageRelations("_to", damage);
@@ -102,12 +116,12 @@ const DamageRelations = ({ damages }) => {
     return { from, to };
   };
 
-  const filterDamageRelations = (valueFilter, damage) => {
-    const result = Object.entries(damage)
+  const filterDamageRelations = (valueFilter: string, damage: DamageRelationsProps) => {
+    const result: SeparateDamages = Object.entries(damage)
       .filter(([keyName, _]) => {
         return keyName.includes(valueFilter);
       })
-      .reduce((acc, [keyName, value]) => {
+      .reduce((acc, [keyName, value]): SeparateDamages => {
         const keyWithValueFilterRemove = keyName.replace(valueFilter, ""); //_from, _to를 지워준다
 
         return (acc = { [keyWithValueFilterRemove]: value, ...acc });
@@ -120,8 +134,8 @@ const DamageRelations = ({ damages }) => {
     <div className="flex gap-2 flex-col w-full">
       {damagePokemonForm ? (
         <>
-          {Object.entries(damagePokemonForm).map(([keyName, value]) => {
-            const key = keyName;
+          {Object.entries(damagePokemonForm).map(([keyName, value]: [string, Damage[]]) => {
+            const key = keyName as keyof typeof damagePokemonForm;
             const valuesOfKeyName = {
               double_damage: "Weak",
               half_damage: "Resistant",
