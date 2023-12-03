@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
+  User,
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
@@ -10,17 +11,16 @@ import {
 } from "firebase/auth";
 import app from "../firebase";
 
-const initialUserData = localStorage.getItem("userData")
-  ? JSON.parse(localStorage.getItem("userData"))
-  : {};
+const userDataFromStorage = localStorage.getItem("userData");
+const initialUserData = userDataFromStorage ? JSON.parse(userDataFromStorage) : null;
 
 const NavBar = () => {
   const auth = getAuth(app);
-  const provider = new GoogleAuthProvider(app, auth);
+  const provider = new GoogleAuthProvider();
 
   const [show, setShow] = useState(false);
 
-  const [userData, setUserData] = useState(initialUserData);
+  const [userData, setUserData] = useState<User | null>(initialUserData);
 
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -68,7 +68,7 @@ const NavBar = () => {
   const handleLogout = () => {
     signOut(auth)
       .then(() => {
-        setUserData({});
+        setUserData(null);
       })
       .catch((error) => alert(error.message));
   };
@@ -163,7 +163,7 @@ const Logo = styled.a`
   margin-top: 4px;
 `;
 
-const NavWrapper = styled.nav`
+const NavWrapper = styled.nav<{ show: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
